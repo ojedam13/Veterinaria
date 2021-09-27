@@ -10,6 +10,41 @@ const sintomasInput = document.querySelector('#sintomas');
 const formulario = document.querySelector('#nueva-cita');
 const contenedorCitas = document.querySelector('#citas');
 
+class Citas{
+    constructor() {
+        this.citas = [];
+    }
+}
+
+class UI{
+    imprimirAlerta(mensaje, tipo) {
+        //crear div
+        const divMensaje = document.createElement('div');
+        divMensaje.classList.add('text-center', 'alert', 'd-block', 'col-12');
+
+        // agregar clase en base al tipo de error
+        if (tipo === 'error') {
+            divMensaje.classList.add('alert-danger')
+        } else {
+             divMensaje.classList.add('alert-success')
+        }
+
+        //Mensaje de error
+        divMensaje.textContent = mensaje;
+
+        // Agregar al Dom
+        document.querySelector('#contenido').insertBefore(divMensaje, document.querySelector('.agregar-cita'));
+
+        //quitar alerta desp de 5s
+        setTimeout(() => {
+            divMensaje.remove();
+        }, 5000);
+    }
+}
+
+const ui = new UI();
+const administrarCitas = new Citas();
+
 // Registar eventos
 eventListeners();
 function eventListeners() {
@@ -19,6 +54,9 @@ function eventListeners() {
     fechaInput.addEventListener('input', datosCitas);
     horaInput.addEventListener('input', datosCitas);
     sintomasInput.addEventListener('input', datosCitas);
+
+    formulario.addEventListener('submit', nuevaCita);
+
 }
 
 
@@ -35,4 +73,21 @@ const citaObj = {
 // Agrega daos al objeto de cita
 function datosCitas(e) {
     citaObj[e.target.name] = e.target.value;
+}
+
+// Valida y agrega una nueva cita a la clase de citas
+function nuevaCita(e) {
+    e.preventDefault();
+
+    // Extraer info del objeto de cita
+    const { mascota, propietario, telefono, fecha, hora, sintomas } = citaObj;
+
+    // Validad
+    if (mascota === '' || propietario === '' || telefono === '' || fecha === '' || hora === '' || sintomas === '') {
+        ui.imprimirAlerta('Todos los campos son obligatorios', 'error')
+
+        return;
+    }
+
+    //crear una nueva cita
 }
