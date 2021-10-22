@@ -13,10 +13,12 @@ const contenedorCitas = document.querySelector('#citas');
 
 let editando;
 
-window.onload = () => {
+window.onload = function() {
     eventListeners();
 
     crearDB();
+
+    
 }
 
 //Clases
@@ -65,12 +67,18 @@ class UI{
         }, 5000);
     }
 
-    imprimirCitas({ citas }) {
+    imprimirCitas() {
 
         this.limpiarHtml();
 
-        citas.forEach(cita => {
-            const { mascota, propietario, telefono, fecha, hora, sintomas, id } = cita;
+        //leer el contenido de la base de datos
+        const objectStore = DB.transaction('citas').objectStore('citas');
+
+        objectStore.openCursor().onsuccess = function(e) {
+            const cursor = e.target.result;
+
+            if (cursor) {
+            const { mascota, propietario, telefono, fecha, hora, sintomas, id } = cursor.value;
             const divCita = document.createElement('div');
             divCita.classList.add('cita', 'p-3');
             divCita.dataset.id = id;
@@ -130,7 +138,15 @@ class UI{
 
             //agregar citas al html
             contenedorCitas.appendChild(divCita);
-        })
+            
+            //VE AL SIGUIENTE ELEMENTO
+            cursor.continue();
+            }
+        }
+
+        // citas.forEach(cita => {
+            
+        // })
     }
 
     limpiarHtml() {
@@ -142,6 +158,7 @@ class UI{
 
 const ui = new UI();
 const administrarCitas = new Citas();
+
 
 // Registar eventos
 eventListeners();
@@ -215,7 +232,7 @@ function nuevaCita(e) {
         // Insertar en el DB
         objectStore.add(citaObj);
 
-        transaction.oncomplete = () => {
+        transaction.oncomplete = function() {
             console.log('cita agregada');
 
             // msj de agregado correctamente
@@ -233,7 +250,7 @@ function nuevaCita(e) {
     formulario.reset();
 
     // mostrar html de las citas
-    ui.imprimirCitas(administrarCitas);
+    ui.imprimirCitas();
 }
 
 function reiniciarObj() {
@@ -251,7 +268,7 @@ function eliminarCita(id) {
     //muestre msj
     ui.imprimirAlerta('La cita ha sido eliminada');
     //refrescar citas
-    ui.imprimirCitas(administrarCitas);
+    ui.imprimirCitas();
 }
 
 //cargar los datos y el modo edicion
@@ -297,6 +314,9 @@ function crearDB() {
         DB = crearDB.result;
 
         console.log(DB);
+
+        //mostrar citas al cargar (indexDB esta listo)
+        ui.imprimirCitas();
     }
 
     //Definir el schema
