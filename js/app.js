@@ -279,11 +279,23 @@ function reiniciarObj() {
 
 function eliminarCita(id) {
     //elimnar la cita
-    administrarCitas.eliminarCita(id);
+    const transaction = DB.transaction(['citas'], 'readwrite');
+    const objectStore = transaction.objectStore('citas');
+
+    objectStore.delete(id);
+
+    transaction.oncomplete = () =>{
+    
+    
     //muestre msj
     ui.imprimirAlerta('La cita ha sido eliminada');
     //refrescar citas
     ui.imprimirCitas();
+    }
+
+    transaction.onerror = () => {
+        console.log('error');
+    }
 }
 
 //cargar los datos y el modo edicion
