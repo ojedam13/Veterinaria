@@ -121,7 +121,8 @@ class UI{
             btnEliminar.onclick = () => eliminarCita(id);
 
             //añade un boton para editar las citas
-            const btnEditar = document.createElement('button');
+                const btnEditar = document.createElement('button');
+                const cita = cursor.value;
             btnEditar.classList.add('btn', 'btn-info')
             btnEditar.innerHTML = 'Editar <svg class="w - 6 h - 6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>';
             btnEditar.onclick = () => cargarEdicion(cita);
@@ -205,16 +206,30 @@ function nuevaCita(e) {
     }
 
     if (editando) {
-        ui.imprimirAlerta('Editado correctamente');
+       
 
         // pasar el objeto de la cita a edicion
         administrarCitas.editarCita({ ...citaObj });
 
-        //regresar el texto del boton a su estado original
-        formulario.querySelector('button[type="submit"]').textContent = 'Crear Cita';
+        //Edita en Indexdb
+        const transaction = DB.transaction(['citas'], 'readwrite');
+        const objectStore = transaction.objectStore('citas');
 
-        //quitar modo edicion
-        editando = false;
+        objectStore.put(citaObj);
+
+        transaction.oncomplete = () => {
+            ui.imprimirAlerta('Editado correctamente');
+              
+            //regresar el texto del boton a su estado original
+            formulario.querySelector('button[type="submit"]').textContent = 'Crear Cita';
+
+            //quitar modo edicion
+            editando = false;
+        }
+
+        transaction.onerror = () => {
+            
+        }
 
     } else {
         //generar un id unico
